@@ -20,6 +20,7 @@ num_epochs = args.num_epochs
 def LoadData():
     """ Loads data from Master Output.csv and Payment Output.csv, sets datatypes """
     filename = os.path.join(data_path, 'Master_Output_Clean.csv')
+    # filename = os.path.join(data_path, 'Master_Output_Short.csv')   # short file for local testing
     master = pd.read_csv(filename, dtype={
         'clientname' : str,
         'accountid' : int,
@@ -89,9 +90,9 @@ def PrepMLPData(master, payments):
     for index, row in master.iterrows():
         
         #Testing code
-        if record % 1000 == 0: print(record)
-        if record >= 10000: break
-        record += 1
+        # if record % 1000 == 0: print(record)
+        # if record >= 10000: break
+        # record += 1
 
         #get current account data    
         account_id = row['accountid']
@@ -132,8 +133,7 @@ def CreateMLPDataLoader(master, solution):
         nonlocal master
         uniq = master[columnname].unique()
         for index, val in np.ndenumerate(uniq):
-            print(index, val)
-            master[columnname] = master[columnname].replace([val], index)
+            master[columnname] = master[columnname].replace([val], index[0])
 
     strtoint('clientname')
     strtoint('Address1')
@@ -145,8 +145,8 @@ def CreateMLPDataLoader(master, solution):
 
     #convert data frame to ndarray
     split = (len(master) // 3) * 2 # set split point at 2/3 of data
-    train_arrays = [np.array(df) for df in master[:split].values]
-    test_arrays = [np.array(df) for df in master[split:].values]
+    train_arrays = master[:split].to_numpy(dtype='float')
+    test_arrays = master[split:].to_numpy(dtype='float')
     train_solution = solution[:split]
     test_solution = solution[split:]
 
@@ -156,7 +156,7 @@ def CreateMLPDataLoader(master, solution):
     train_solution_tensor = torch.tensor(train_solution)
     test_solution_tensor = torch.tensor(test_solution)
     # data frame to tensor conversion could also have been done like this
-    # list_of_tensors = [torch.tensor(np.array(df)) for df in data]
+    # list_of_tensors = [to rch.tensor(np.array(df)) for df in data]
     # torch.stack(list_of_tensors)
 
     #convert tensor to DataSet
@@ -169,6 +169,27 @@ def CreateMLPDataLoader(master, solution):
     return train_dl, test_dl
 
 
+def PreProcess():
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    master, payments = LoadData()
+    print('Data Loaded')
+    solution, master = PrepMLPData(master, payments)
+    print('Data Prepped')
+    train_dl, test_dl = CreateMLPDataLoader(master, solution)
+    print('Data Loader Created')
+    filename = os.path.join(data_path, 'train_dl.pt')
+    torch.save(train_dl, filename)
+    filename = os.path.join(data_path, 'test_dl.pt')
+    torch.save(test_dl, filename)
+    print('YAY!')
 
-master, payments = LoadData()
-print('Data Loaded')
+
+def LoadPreProcess():
+    filename = os.path.join(data_path, 'train_dl.pt')
+    train_dl = torch.load(filename)
+    filename = os.path.join(data_path, 'test_dl.pt')
+    test_dl = torch.load(filename)
+    return train_dl, test_dl
+
+
+PreProcess()
