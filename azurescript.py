@@ -154,9 +154,3 @@ def RunAzureScript():
 
 
 
-ConnectToAzure()
-UploadData()
-CreateAzureDataset()
-PrepareAzureScript()
-RunAzureScript()
-print('done')

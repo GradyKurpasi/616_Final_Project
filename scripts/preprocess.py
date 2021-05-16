@@ -4,7 +4,6 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 import pandas as pd 
 import numpy as np 
-from sklearn import preprocessing
 import torch
 import argparse
 
@@ -129,17 +128,20 @@ def CreateMLPDataLoader(master, solution):
     """
 
     # convert all strings to integers
-    # this uses sklearn label encoder, simple integer replacement of unique strings
-    # could also have used pytorch's transforms to create one-hot-encoded tensors 
-    # for NLP will use a hyperspace encoding
-    le = preprocessing.LabelEncoder()
-    master['clientname'] = le.fit_transform(master['clientname'])
-    master['Address1'] = le.fit_transform(master['Address1'])
-    master['Address2'] = le.fit_transform(master['Address2'])
-    master['City'] = le.fit_transform(master['City'])
-    master['State'] = le.fit_transform(master['State'])
-    master['PostalCode']= le.fit_transform(master['PostalCode'])
-    master['dateplaced'] = le.fit_transform(master['dateplaced'])
+    def strtoint(columnname):
+        nonlocal master
+        uniq = master[columnname].unique()
+        for index, val in np.ndenumerate(uniq):
+            print(index, val)
+            master[columnname] = master[columnname].replace([val], index)
+
+    strtoint('clientname')
+    strtoint('Address1')
+    strtoint('Address2')
+    strtoint('City')
+    strtoint('State')
+    strtoint('PostalCode')
+    strtoint('dateplaced')
 
     #convert data frame to ndarray
     split = (len(master) // 3) * 2 # set split point at 2/3 of data
