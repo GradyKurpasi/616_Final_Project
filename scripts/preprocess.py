@@ -6,8 +6,17 @@ import pandas as pd
 import numpy as np 
 from sklearn import preprocessing
 import torch
+import argparse
 
-data_path = "./data/"
+
+### AZUREML SDK STUFF - comment out for local runs
+parser = argparse.ArgumentParser()
+parser.add_argument("--data-folder", type=str, dest="data_folder", help="data folder mounting point", default="")
+parser.add_argument("--num-epochs", type=int, dest="num_epochs", help="Number of epochs", default="")
+args = parser.parse_args()
+data_path = args.data_folder
+num_epochs = args.num_epochs
+# data_path = "./data/"
 
 def LoadData():
     """ Loads data from Master Output.csv and Payment Output.csv, sets datatypes """
@@ -156,3 +165,8 @@ def CreateMLPDataLoader(master, solution):
     test_dl = DataLoader(test_ds, batch_size=100, shuffle=True)
 
     return train_dl, test_dl
+
+
+
+master, payments = LoadData()
+print('Data Loaded')
