@@ -7,6 +7,8 @@ import numpy as np
 import torch
 import argparse
 
+from torch.utils.data.dataset import BufferedShuffleDataset
+
 
 arg_data_path = "./data/"   #default to local environment
 arg_num_epochs = 100         #default value for local run
@@ -200,6 +202,13 @@ def LoadPreProcess(datapath = arg_data_path, trainfile = 'train_dl.pt', testfile
 
 # UNCOMMENT FOR AZURE RUNS
 # PreProcess()
+train_dl, test_dl = LoadPreProcess()
+n = 0
+for x, y in train_dl:
+    print(x, y)
+    n += 1
+    if n > 5: break
+    
 
 
 

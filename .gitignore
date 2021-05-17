@@ -11,3 +11,8 @@ alldone.csv
 data/addressdone.csv
 data/Master_Output_Trunc.csv
 data/train_dl.pt
+staged_data/addressdone.csv
+staged_data/Master_Output_Clean.csv
+staged_data/Master_Output_Short.csv
+staged_data/Master_Output_Trunc.csv
+staged_data/Payment_Output.csv

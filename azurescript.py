@@ -1,9 +1,10 @@
-import os#, random
-import azureml
-import shutil
+# import os#, random
+# import azureml
+# import shutil
 # import urllib.request
 # from pathlib import Path
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+
 # from mpl_toolkits.axes_grid1 import AxesGrid
 # import cv2
 # import urllib3 
@@ -15,6 +16,7 @@ from azureml.core import Workspace, Datastore, Experiment, Run, Environment, Scr
 from azureml.core.compute import ComputeTarget #, AmlCompute, AksCompute
 from azureml.core.dataset import Dataset
 from azureml.widgets import RunDetails
+
 
 
 
@@ -64,7 +66,7 @@ def ConnectToAzure():
 
     # Connect to the experiment
     global az_experiment
-    az_experiment = Experiment(workspace=az_workspace, name='ANFIS-PyTorch')
+    az_experiment = Experiment(workspace=az_workspace, name='616_Final')
     print("Experiment:",az_experiment.name)
 
 def UploadData():
