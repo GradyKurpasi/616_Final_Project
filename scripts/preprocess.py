@@ -8,19 +8,35 @@ import torch
 import argparse
 
 
-### AZUREML SDK STUFF - comment out for local runs
-parser = argparse.ArgumentParser()
-parser.add_argument("--data-folder", type=str, dest="data_folder", help="data folder mounting point", default="")
-parser.add_argument("--num-epochs", type=int, dest="num_epochs", help="Number of epochs", default="")
-args = parser.parse_args()
-data_path = args.data_folder
-num_epochs = args.num_epochs
-# data_path = "./data/"
+arg_data_path = "./data/"   #default to local environment
+arg_num_epochs = 100         #default value for local run
 
-def LoadData():
-    """ Loads data from Master Output.csv and Payment Output.csv, sets datatypes """
-    filename = os.path.join(data_path, 'Master_Output_Clean.csv')
-    # filename = os.path.join(data_path, 'Master_Output_Short.csv')   # short file for local testing
+def ParseArguments():
+    """
+        AZUREML SDK CODE 
+        Parse Arguments from ScripRun
+        DO NOT CALL FOR LOCAL RUNS
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-folder", type=str, dest="data_folder", help="data folder mounting point", default="")
+    parser.add_argument("--num-epochs", type=int, dest="num_epochs", help="Number of epochs", default="")
+    args = parser.parse_args()
+    global arg_data_path
+    arg_data_path = args.data_folder
+    global arg_num_epochs
+    arg_num_epochs = args.num_epochs
+
+def LoadData(datapath = arg_data_path, filename = None):
+    """ 
+        Loads data from Master Output.csv and Payment Output.csv, sets datatypes 
+        Accepts optional filename parameter
+        filename MUST be a formated as a 'master' output file
+    """
+    if filename == None: 
+        # filename = 'Master_Output_Short.csv'
+        # # filename = 'Master_Output_Clean.csv'
+        filename = 'Master_Output_Trunc.csv'
+    filename = os.path.join(datapath, filename)
     master = pd.read_csv(filename, dtype={
         'clientname' : str,
         'accountid' : int,
@@ -43,7 +59,7 @@ def LoadData():
         'haspromever' : int
     }) 
 
-    filename = os.path.join(data_path, 'Payment_Output.csv')
+    filename = os.path.join(datapath, 'Payment_Output.csv')
     payments =  pd.read_csv(filename, dtype ={
         'accountid' : int,
         'customerid' : int, 
@@ -128,21 +144,6 @@ def CreateMLPDataLoader(master, solution):
         Also splits data into training and testing data sets
     """
 
-    # convert all strings to integers
-    def strtoint(columnname):
-        nonlocal master
-        uniq = master[columnname].unique()
-        for index, val in np.ndenumerate(uniq):
-            master[columnname] = master[columnname].replace([val], index[0])
-
-    strtoint('clientname')
-    strtoint('Address1')
-    strtoint('Address2')
-    strtoint('City')
-    strtoint('State')
-    strtoint('PostalCode')
-    strtoint('dateplaced')
-
     #convert data frame to ndarray
     split = (len(master) // 3) * 2 # set split point at 2/3 of data
     train_arrays = master[:split].to_numpy(dtype='float')
@@ -169,27 +170,62 @@ def CreateMLPDataLoader(master, solution):
     return train_dl, test_dl
 
 
-def PreProcess():
+def PreProcess(location = 'AZURE', datapath = arg_data_path, trainfile = 'train_dl.pt', testfile = 'test_dl.pt'):
+    """
+        Run All Preprocessing 
+        NOT RECOMMENDED FOR LOCAL RUNS
+    """
+    if location == 'AZURE': ParseArguments()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    master, payments = LoadData()
+    master, payments = LoadData(filename='alldone.csv')
     print('Data Loaded')
     solution, master = PrepMLPData(master, payments)
     print('Data Prepped')
     train_dl, test_dl = CreateMLPDataLoader(master, solution)
     print('Data Loader Created')
-    filename = os.path.join(data_path, 'train_dl.pt')
+    filename = os.path.join(datapath, trainfile)
     torch.save(train_dl, filename)
-    filename = os.path.join(data_path, 'test_dl.pt')
+    filename = os.path.join(datapath, testfile)
     torch.save(test_dl, filename)
     print('YAY!')
 
-
-def LoadPreProcess():
-    filename = os.path.join(data_path, 'train_dl.pt')
+def LoadPreProcess(datapath = arg_data_path, trainfile = 'train_dl.pt', testfile = 'test_dl.pt'):
+    filename = os.path.join(datapath, trainfile)
     train_dl = torch.load(filename)
-    filename = os.path.join(data_path, 'test_dl.pt')
+    filename = os.path.join(datapath, testfile)
     test_dl = torch.load(filename)
     return train_dl, test_dl
 
 
-PreProcess()
+
+# UNCOMMENT FOR AZURE RUNS
+# PreProcess()
+
+
+
+
+
+
+
+
+##############################################################################################################################
+# OLD COLD 
+# DO NOT USE 
+# MAKES MULTIPLE PASS THROUGH ALL ROWS IN DATA FRAME  
+# VERY SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    # # convert all strings to integers
+    # def strtoint(columnname):
+    #     nonlocal master
+    #     uniq = master[columnname].unique()
+    #     for index, val in np.ndenumerate(uniq):
+    #         master[columnname] = master[columnname].replace([val], index[0])
+
+    # strtoint('clientname')
+    # strtoint('Address1')  #THIS NEEDS TO BE REPLACED - PRETTY MUCH EVERY ADDRESS IS UNIQUE - VERRRRRRYYYY SLOOOOWWWWWW
+    # strtoint('Address2')
+    # strtoint('City')
+    # strtoint('State')
+    # strtoint('PostalCode')
+    # strtoint('dateplaced')

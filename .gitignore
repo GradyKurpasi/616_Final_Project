@@ -4,3 +4,10 @@ Master Output.csv
 Payment Output.csv
 data/Master_Output_Clean.csv
 data/Payment_Output.csv
+data/test_dl.pt
+data/train_dl.pt
+addressdone - Copy.csv
+alldone.csv
+data/addressdone.csv
+data/Master_Output_Trunc.csv
+data/train_dl.pt
