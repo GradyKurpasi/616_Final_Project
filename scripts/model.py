@@ -47,7 +47,7 @@ def trainMLP():
     model = SimpleMLP()
     train_dl, test_dl = pp.LoadPreProcess()
     opt = optim.SGD(model.parameters(), lr=lr)
-    epochs = 1
+    epochs = 1000
 
     for epoch in range(epochs):
         ## TRAINING
@@ -96,6 +96,7 @@ def trainMLP():
         last_val_loss = val_loss
 
 
+    torch.save(model, './outputs/model.pth')
 
 
 

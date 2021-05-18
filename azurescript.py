@@ -104,7 +104,8 @@ def PrepareAzureScript():
     """
 
     # Use an Azure curated environment to create docker container
-    curated_env_name = 'AzureML-PyTorch-1.6-GPU'
+    # curated_env_name = 'AzureML-PyTorch-1.6-GPU'
+    curated_env_name = 'AzureML-Pytorch1.7-Cuda11-OpenMpi4.1.0-py36'
 
     pytorch_env = Environment.get(workspace=az_workspace, name=curated_env_name)
     pytorch_env = pytorch_env.clone(new_name='pytorch-1.6-gpu')
@@ -166,13 +167,13 @@ def SaveModel():
     global az_experiment
     r = list(az_experiment.get_runs())   # Experiment.get_runs() returns a generator that enumerates runs in chronologica order
     lastrun = r[0]      # get last run
-    print(lastrun.id)
+    print("LAST RUN ID: ", lastrun.id)
     # RunDetails(run).show()
 
-    model = lastrun.register_model(model_name='ANFIS-PyTorch',
-                            model_path='outputs',
+    model = lastrun.register_model(model_name='616-Final',
+                            model_path='./outputs/',
                             model_framework='PyTorch',
-                            model_framework_version='1.6',
+                            model_framework_version='1.7',
                             description="ANFIS PyTorchmodel",
                             tags={'ANFIS':'Pytorch'},
                             resource_configuration=ResourceConfiguration(cpu=1, memory_in_gb=2))
