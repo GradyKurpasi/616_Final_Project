@@ -147,10 +147,12 @@ def CreateMLPDataLoader(master, solution):
         Also splits data into training and testing data sets
     """
 
-    #convert data frame to ndarray
+    #convert data frame to ndarray and split data into training and test datasets
+    # master is a dataframe that needs to be converted
+    # solution is already an ndarray, just needs to be split
     split = (len(master) // 3) * 2 # set split point at 2/3 of data
-    train_arrays = master[:split].to_numpy(dtype='float')
-    test_arrays = master[split:].to_numpy(dtype='float')
+    train_arrays = master[:split].to_numpy(dtype='float64')
+    test_arrays = master[split:].to_numpy(dtype='float64')
     train_solution = solution[:split]
     test_solution = solution[split:]
 
@@ -207,7 +209,7 @@ def LoadPreProcess(datapath = None, trainfile = 'train_dl.pt', testfile = 'test_
 
 
 # UNCOMMENT FOR AZURE RUNS
-PreProcess()
+# PreProcess()
 # ParseArguments()
 # train_dl, test_dl = LoadPreProcess()
 # n = 0
