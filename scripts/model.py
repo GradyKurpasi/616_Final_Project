@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch import optim
 from torch.nn.modules.activation import Sigmoid
-import scripts.preprocess as pp
+import preprocess as pp
 
 
 
@@ -47,12 +47,13 @@ def trainMLP():
     model = SimpleMLP()
     train_dl, test_dl = pp.LoadPreProcess()
     opt = optim.SGD(model.parameters(), lr=lr)
-    epochs = 4
+    epochs = 1
 
     for epoch in range(epochs):
         ## TRAINING
         model.train()
         for xb, yb in train_dl:
+            yb = yb.reshape(len(yb), 1)
             # print(xb.float())
             # print(type(xb))
             pred = model(xb.float())
@@ -76,11 +77,13 @@ def trainMLP():
         num_pay = 0
         with torch.no_grad():
             for xb, yb in test_dl:
+                yb = yb.reshape(len(yb), 1)
+                # pred = pred.reshape(len(pred), 0)
                 pred = model(xb.float())
                 assert len(pred) == len(yb)
                 val_loss += loss_func(pred, yb.long())
-                pred[pred<.5]==0
-                pred[pred>=.5]==1
+                pred[pred<.5]=0
+                pred[pred>=.5]=1
                 num_pay += yb.sum()
                 num_correct += (pred==yb).sum()
                 num += len(yb)
@@ -89,7 +92,7 @@ def trainMLP():
         print('Successes: ', num_correct)
         print('Accuraccy: ,', num_correct / num)
         print('Num Pay: ', num_pay)
-        if last_val_loss > val_loss: print('OVERTRAINING')
+        if last_val_loss < val_loss: print('OVERTRAINING')
         last_val_loss = val_loss
 
 

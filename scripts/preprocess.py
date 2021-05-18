@@ -199,6 +199,8 @@ def PreProcess(datapath = None, trainfile = 'train_dl2.pt', testfile = 'test_dl2
 
 def LoadPreProcess(datapath = None, trainfile = 'train_dl.pt', testfile = 'test_dl.pt'):
     
+
+    ParseArguments() # REMOVE FOR LOCAL RUNS
     if datapath == None: datapath = arg_data_path
     filename = os.path.join(datapath, trainfile)
     train_dl = torch.load(filename)

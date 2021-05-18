@@ -16,6 +16,7 @@ from azureml.core import Workspace, Datastore, Experiment, Run, Environment, Scr
 from azureml.core.compute import ComputeTarget #, AmlCompute, AksCompute
 from azureml.core.dataset import Dataset
 from azureml.widgets import RunDetails
+from azureml.core.resource_configuration import ResourceConfiguration
 
 
 
@@ -137,7 +138,7 @@ def PrepareAzureScript():
     global az_computetarget
     az_config = ScriptRunConfig(
         source_directory = project_folder, 
-        script = 'preprocess.py', 
+        script = 'model.py', 
         compute_target=az_computetarget,
         environment = pytorch_env,
         arguments=args,
@@ -156,3 +157,25 @@ def RunAzureScript():
 
 
 
+def SaveModel():
+    """
+        registers last model run in experiment
+        also downloads model to outputs
+    """
+    # Load a historic run (i.e. last run)
+    global az_experiment
+    r = list(az_experiment.get_runs())   # Experiment.get_runs() returns a generator that enumerates runs in chronologica order
+    lastrun = r[0]      # get last run
+    print(lastrun.id)
+    # RunDetails(run).show()
+
+    model = lastrun.register_model(model_name='ANFIS-PyTorch',
+                            model_path='outputs',
+                            model_framework='PyTorch',
+                            model_framework_version='1.6',
+                            description="ANFIS PyTorchmodel",
+                            tags={'ANFIS':'Pytorch'},
+                            resource_configuration=ResourceConfiguration(cpu=1, memory_in_gb=2))
+
+    print("Model '{}' version {} registered ".format(model.name,model.version))
+    model.download(exist_ok=True)
