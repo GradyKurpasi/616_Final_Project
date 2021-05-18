@@ -1,5 +1,6 @@
 
 import os
+from pandas.io.parsers import ParserBase
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 import pandas as pd 
@@ -7,7 +8,7 @@ import numpy as np
 import torch
 import argparse
 
-from torch.utils.data.dataset import BufferedShuffleDataset
+# from torch.utils.data.dataset import BufferedShuffleDataset
 
 
 arg_data_path = "./data/"   #default to local environment
@@ -28,16 +29,16 @@ def ParseArguments():
     global arg_num_epochs
     arg_num_epochs = args.num_epochs
 
-def LoadData(datapath = arg_data_path, filename = None):
+def LoadData(datapath = None, filename = None):
     """ 
         Loads data from Master Output.csv and Payment Output.csv, sets datatypes 
         Accepts optional filename parameter
         filename MUST be a formated as a 'master' output file
     """
-    if filename == None: 
-        # filename = 'Master_Output_Short.csv'
-        # # filename = 'Master_Output_Clean.csv'
-        filename = 'Master_Output_Trunc.csv'
+    if datapath == None: datapath = arg_data_path
+    if filename == None: filename = 'Master_Output_Short.csv'
+        # filename = 'Master_Output_Clean.csv'
+        # filename = 'Master_Output_Trunc.csv'
     filename = os.path.join(datapath, filename)
     master = pd.read_csv(filename, dtype={
         'clientname' : str,
@@ -172,13 +173,16 @@ def CreateMLPDataLoader(master, solution):
     return train_dl, test_dl
 
 
-def PreProcess(location = 'AZURE', datapath = arg_data_path, trainfile = 'train_dl.pt', testfile = 'test_dl.pt'):
+def PreProcess(datapath = None, trainfile = 'train_dl2.pt', testfile = 'test_dl2.pt', location = 'AZURE'):
     """
         Run All Preprocessing 
         NOT RECOMMENDED FOR LOCAL RUNS
     """
-    if location == 'AZURE': ParseArguments()
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if location == 'AZURE': ParseArguments()
+    if datapath == None: datapath = arg_data_path
+
     master, payments = LoadData(filename='alldone.csv')
     print('Data Loaded')
     solution, master = PrepMLPData(master, payments)
@@ -191,7 +195,9 @@ def PreProcess(location = 'AZURE', datapath = arg_data_path, trainfile = 'train_
     torch.save(test_dl, filename)
     print('YAY!')
 
-def LoadPreProcess(datapath = arg_data_path, trainfile = 'train_dl.pt', testfile = 'test_dl.pt'):
+def LoadPreProcess(datapath = None, trainfile = 'train_dl.pt', testfile = 'test_dl.pt'):
+    
+    if datapath == None: datapath = arg_data_path
     filename = os.path.join(datapath, trainfile)
     train_dl = torch.load(filename)
     filename = os.path.join(datapath, testfile)
@@ -201,14 +207,15 @@ def LoadPreProcess(datapath = arg_data_path, trainfile = 'train_dl.pt', testfile
 
 
 # UNCOMMENT FOR AZURE RUNS
-# PreProcess()
-train_dl, test_dl = LoadPreProcess()
-n = 0
-for x, y in train_dl:
-    print(x, y)
-    n += 1
-    if n > 5: break
-    
+PreProcess()
+# ParseArguments()
+# train_dl, test_dl = LoadPreProcess()
+# n = 0
+# for x, y in train_dl:
+#     print(x, y)
+#     n += 1
+#     if n > 5: break
+
 
 
 

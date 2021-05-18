@@ -16,3 +16,7 @@ staged_data/Master_Output_Clean.csv
 staged_data/Master_Output_Short.csv
 staged_data/Master_Output_Trunc.csv
 staged_data/Payment_Output.csv
+data/alldonesmall.csv
+staged_data/alldonesmall.csv
+train_dl.pt
+test_dl.pt
